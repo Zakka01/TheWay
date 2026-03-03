@@ -1,9 +1,14 @@
-# from maze.maze_generator import blabla
+from maze.maze_generator import Block 
 import sys
 
 def Parse_config() -> dict:
 
-    # parse file and store it in the dict
+    """
+        Parse the Config File, Validate and Store the Data 
+        in a Dict, Handle the Error using try/Except to prevent 
+        Crashes
+    """
+    # Get Line , Strip it, Split based on '=', Store key value
     try:
         config = {}
         if len(sys.argv) > 1:
@@ -29,7 +34,7 @@ def Parse_config() -> dict:
         print(f"ERROR CAUGHT: {e}")
         sys.exit(1)
         
-    # convert to valid values
+    # Convert the Dict values into valide Data ready to Use
     try:
         for key, value in config.items():
             if key in ["ENTRY", "EXIT"]:

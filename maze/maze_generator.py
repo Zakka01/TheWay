@@ -59,6 +59,11 @@ class MazeGen:
 
 
     def grid_builder(self) -> None:
+        
+        """
+            Build the Grid System Based On 
+            the HEIGHT &&& WIDTH from Config File 
+        """
         w = self.width
         h = self.height
         for y in range(h):
@@ -66,4 +71,3 @@ class MazeGen:
             for x in range(w):
                 row.append(Block(x, y))
             self.grid.append(row)
-        return self.grid

@@ -1,7 +1,7 @@
 # from maze.maze_generator import blabla
 import sys
 
-def main() -> dict:
+def Parse_config() -> dict:
 
     # parse file and store it in the dict
     try:
@@ -55,8 +55,7 @@ def main() -> dict:
         print(f"ERROR: {err}")
         sys.exit(1)
         
-    print(config)      
-
+    return dict   
 
 
 

@@ -64,12 +64,12 @@ def parse_config() -> dict:
 
 
 def main() -> None:
+    
     config = parse_config()
     maze = MazeGen(config)
     
-    grid = maze.grid_builder()
+    maze.grid_builder()
     
-    print(grid)
 
 
 

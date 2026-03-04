@@ -12,10 +12,10 @@ class Block:
         self.x = x
         self.y = y
         self.walls = {
-            "n": True,
-            "s": True,
-            "e": True,
-            "w": True
+            "top": True,
+            "bottom": True,
+            "left": True,
+            "right": True
         }
         self.checked = False
 
@@ -64,10 +64,24 @@ class MazeGen:
             Build the Grid System Based On 
             the HEIGHT &&& WIDTH from Config File 
         """
-        w = self.width
-        h = self.height
-        for y in range(h):
+        for y in range(self.height):
             row = []
-            for x in range(w):
+            for x in range(self.width):
                 row.append(Block(x, y))
             self.grid.append(row)
+
+
+
+    def check_around(self, block: Block):
+        """
+            check the 4 possible neighbors
+            while x & y are the coordinates
+        """
+        valid_neighbors = []
+        x, y = block.x, block.y
+
+        top = (x, y-1)
+        bottom = (x, y+1)
+        left = (x-1, y)
+        right = (x+1, y)
+        

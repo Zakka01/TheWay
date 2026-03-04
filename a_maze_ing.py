@@ -1,6 +1,7 @@
 import sys
 from maze.maze_generator import Block, MazeGen
 
+
 def parse_config() -> dict:
 
     """
@@ -8,7 +9,7 @@ def parse_config() -> dict:
         in a Dict, Handle the Error using try/Except to prevent 
         Crashes
     """
-    # Get Line , Strip it, Split based on '=', Store key value
+    # Get Line, Strip it, Split based on '=', Store key value
     try:
         config = {}
         if len(sys.argv) > 1:
@@ -18,10 +19,13 @@ def parse_config() -> dict:
                     line = line.strip()
                     if line == "":
                         continue
+
                     elif line.startswith("#"):
                         continue
+
                     elif not "=" in line:
                         raise ValueError("Invalid Config Line")
+
                     else:
                         key, value = line.split("=", 1)
                         key, value = key.strip(), value.strip()
@@ -29,9 +33,9 @@ def parse_config() -> dict:
                             raise ValueError("Duplicate Lines")
                         config[key] = value
         else:
-            raise Exception("No Config File Given")
+            raise IndexError("No Config File Given")
     except Exception as e:
-        print(f"ERROR CAUGHT: {e}")
+        print(f"ERROR: {e}", sys.stderr)
         sys.exit(1)
         
     # Convert the Dict values into valide Data ready to Use
@@ -57,10 +61,16 @@ def parse_config() -> dict:
                     raise ValueError("OUTPUT_FILE is not valid")
                 config[key] = value
     except Exception as err:
-        print(f"ERROR: {err}")
+        print(f"ERROR: {err}", sys.stderr)
         sys.exit(1)
         
     return config
+
+
+
+
+
+
 
 
 def main() -> None:
@@ -70,8 +80,6 @@ def main() -> None:
     
     maze.grid_builder()
     
-
-
 
 
 

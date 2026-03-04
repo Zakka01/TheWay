@@ -1,3 +1,5 @@
+import random
+
 class Block:
     def __init__(self, x: int, y: int):
 
@@ -8,7 +10,6 @@ class Block:
             checked => if the block already visited or not
             ... 
         """
-
         self.x = x
         self.y = y
         self.walls = {
@@ -42,9 +43,6 @@ class Block:
 
 
 class MazeGen:
-    """
-        The Main Maze Generator Class
-    """
 
     def __init__(self, config: dict):
         """
@@ -72,16 +70,60 @@ class MazeGen:
 
 
 
-    def check_around(self, block: Block):
+    def check_around(self, block: Block) -> list:
         """
-            check the 4 possible neighbors
-            while x & y are the coordinates
+            check the 4 possible neighbors while x & y 
+            are the coordinates, then we check the bounderies 
+            if valid, to append the valid neighbor to the list
         """
         valid_neighbors = []
         x, y = block.x, block.y
 
-        top = (x, y-1)
-        bottom = (x, y+1)
-        left = (x-1, y)
-        right = (x+1, y)
+        neighbors = [(x, y-1), (x, y+1), (x-1, y), (x+1, y)]
         
+        # loop over Neighbors & Add valid ones that hasn't checked yet
+        for n in neighbors:
+            nx, ny = n
+            if 0 <= nx < self.width and 0 <= ny < self.height:
+                this_block = self.grid[ny][nx]
+                if not this_block.checked:
+                    valid_neighbors.append(this_block)
+
+        return valid_neighbors
+
+
+
+
+    def generate(self, block: Block):
+
+        block.checked = True
+        valid_neighbors = self.check_around(block)
+
+        if valid_neighbors:
+            next_block = random.choice(valid_neighbors)
+        
+        # Unpacking for current & next Block
+        current_block = block
+        cx, cy = current_block.x, current_block.y
+        nx, ny = next_block.x, next_block.y
+        
+        # which neighbor to remove wall | which direction
+        if cx < nx:
+            current_block.pop_wall("left")
+            next_block.pop_wall("right")
+        elif cx > nx:
+            current_block.pop_wall("right")
+            next_block.pop_wall("left")
+        elif cy > ny:
+            current_block.pop_wall("top")
+            next_block.pop_wall("bottom")
+        elif cy < ny:
+            current_block.pop_wall("bottom")
+            next_block.pop_wall("top")
+        
+        next_block.checked = True
+        self.generate(next_block)
+
+            
+
+

@@ -1,5 +1,5 @@
 import sys
-from maze.maze_generator import Block, MazeGen
+from maze.maze_generator import MazeGen
 
 
 def parse_config() -> dict:
@@ -75,15 +75,47 @@ def parse_config() -> dict:
 
 def main() -> None:
     
-    config = parse_config()
-    maze = MazeGen(config)
-    
+    config = parse_config() # Get config file result
+
+    # Create Instance of the Maze to Build Grid and Generate Maze
+    maze = MazeGen(config) 
     maze.grid_builder()
-    start = maze.grid[0][0]
-    maze.generate(start)
+
+    # Get the Entry Coordinates from the config
+    entry = config["ENTRY"]
+    end = config["EXIT"]
+    x, y = entry
+    exit_x, exit_y = end
     
+    start_block = maze.grid[y][x]
+    end_block = maze.grid[exit_y][exit_x]
+    
+    # Generate the maze starting from the entry
+    maze.generate(start_block)
+
+    
+    # Open the entry wall
+    if y == 0:
+        start_block.pop_wall("top")
+    elif y == maze.height - 1:
+        start_block.pop_wall("bottom")
+    elif x == 0:
+        start_block.pop_wall("left")
+    elif x == maze.width - 1:
+        start_block.pop_wall("right")
+
+    # Open the exit wall
+    if exit_y == 0:
+        end_block.pop_wall("top")
+    elif exit_y == maze.height - 1:
+        end_block.pop_wall("bottom")
+    elif exit_x == 0:
+        end_block.pop_wall("left")
+    elif exit_x == maze.width - 1:
+        end_block.pop_wall("right")
+    
+    # Print the maze to see the result
     maze.print_maze()
-    
 
 
 

@@ -136,12 +136,17 @@ class MazeGen:
 
     # Just a small visualizer to see the generated maze 
     def print_maze(self):
+        # Print top border based on the first row's top walls
+        top_row = "o"
 
-        # top border
-        print("+" + "---+" * self.width)
+        for x in range(self.width):
+            if self.grid[0][x].walls["top"]:
+                top_row += "---+"
+            else:
+                top_row += "   +"
+        print(top_row)
 
         for y in range(self.height):
-
             row_top = "|"
             row_bottom = "+"
 
@@ -151,11 +156,13 @@ class MazeGen:
                 # cell space
                 row_top += "   "
 
+                # right wall
                 if block.walls["right"]:
                     row_top += "|"
                 else:
                     row_top += " "
 
+                # bottom wall
                 if block.walls["bottom"]:
                     row_bottom += "---+"
                 else:

@@ -116,7 +116,21 @@ def main() -> None:
         end_block.pop_wall("right")
     
     # Print the maze to see the result
-    maze.print_maze()
+    # maze.print_maze()
+    
+    hex_output = maze.hex_encoding()
+    
+    try:
+        output_file = config["OUTPUT_FILE"]
+        with open(output_file, "w") as f:
+            for row in hex_output:
+                f.write(''.join(row) + "\n")
+    except Exception as err:
+        print(f"ERROR: {err}")
+             
+    
+    
+    
 
 
 

@@ -140,6 +140,25 @@ class MazeGenerator:
 
 
 
+    def hex_encoding(self) -> list:
+        hex_lst = "0123456789ABCDEF"
+        hex_output = []
+        for col in range(self.width):
+            row_output = []
+            for row in range(self.height):
+                value = 0
+                block = self.grid[row][col]
+                if block.has_wall("top"): value += 1
+                if block.has_wall("right"): value += 2
+                if block.has_wall("bottom"): value += 4
+                if block.has_wall("left"): value += 8
+
+                block_hex = hex_lst[value]
+                row_output.append(block_hex)
+            hex_output.append(row_output)
+
+        return hex_output
+
 
 
     # Just a small visualizer to see the generated maze 

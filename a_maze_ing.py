@@ -92,7 +92,7 @@ def main() -> None:
     end_block = maze.grid[exit_y][exit_x]
     
     maze.ft_pattern()
-    maze.generate(start_block)
+    maze.gen_algo(start_block)
 
     
     # Open the entry wall

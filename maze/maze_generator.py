@@ -77,6 +77,13 @@ class MazeGenerator:
 
 
     def ft_pattern(self):
+        """
+            Get the Pattern value from config file
+            - split the number and put them on list then
+            loop thow each one and apply it to the maze 
+            as offset from the digit's center
+        """
+        
         cx = self.width // 2
         cy = self.height // 2
 
@@ -144,13 +151,15 @@ class MazeGenerator:
 
 
 
-    def generate(self, current_block: Block):
+    def gen_algo(self, current_block: Block):
         
         """
             Start at the Current Block, Check for Neighbors
             if any choose One Random, remove wall between current 
-            and that neighbor, mark it as checked call the function 
-            Recusively for that Neighbor as Param
+            and that neighbor, mark it as checked and append block
+            to the stack, if no neighbor found remove the 
+            last item (the current block) and access the last one [-1]
+            this is BackTracking :) 
         """
         random.seed(self.seed)
 

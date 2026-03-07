@@ -49,7 +49,7 @@ def parse_config() -> dict:
                     raise ValueError(f"{key} coordinates out of bounds")
                 config[key] = (x, y)
 
-            elif key in ["WIDTH", "HEIGHT", "SEED"]:
+            elif key in ["WIDTH", "HEIGHT", "SEED", "PATTERN"]:
                 config[key] = int(value)
             
             elif key == "PERFECT":

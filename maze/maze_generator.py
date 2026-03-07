@@ -58,6 +58,7 @@ class MazeGenerator:
         self.height = config["HEIGHT"]
         self.width = config["WIDTH"]
         self.seed = config["SEED"]
+        self.pattern = config["PATTERN"]
 
 
     def grid_builder(self) -> None:
@@ -79,32 +80,47 @@ class MazeGenerator:
         cx = self.width // 2
         cy = self.height // 2
 
+        # number = self.pattern
+        # digits = []
+        # while number > 0:
+        #     digits.append(number % 10)
+        #     number //= 10
+        # digits.reverse()
+        
         four = [
-            (0,0),
-            (0,1),
-            (0,2), (1,2),(2,2),
-                        (2,3),
-                        (2,4),
+            (cy-2, cx-3),
+            (cy-1, cx-3),
+            (cy, cx-1),
+            (cy, cx-2),
+            (cy, cx-3),
+            (cy, cx-1),
+            (cy+1, cx-1),
+            (cy+2, cx-1)
         ]
-
+        
         two = [
-            (4,0),(5,0),(6,0),
-                        (6,1),
-            (4,2),(5,2),(6,2),
-            (4,3),
-            (4,4),(5,4),(6,4)
+            (cy+2, cx+1),
+            (cy+2, cx+2),
+            (cy-1, cx+3),
+            (cy+2, cx+3),
+            (cy, cx+1),
+            (cy, cx+2),
+            (cy, cx+3),
+            (cy+1, cx+1),
+            (cy-2, cx+1),
+            (cy-2, cx+2),
+            (cy-2, cx+3)
         ]
-
-        pattern = four + two
-
-        for dx, dy in pattern:
-            x, y = cx + dx, cy + dy
-            if 0 <= x < self.width and 0 <= y < self.height:
-                self.grid[y][x].is_pattern = True
-
+        
+        for dy, dx in four:
+            self.grid[dy][dx].is_pattern = True
+        
+        for dy, dx in two:
+            self.grid[dy][dx].is_pattern = True
 
 
 
+    
     def check_around(self, block: Block) -> list:
         """
             check the 4 possible neighbors while x & y 

@@ -122,7 +122,7 @@ def main() -> None:
 
 
     # Print the maze to see the result
-    # maze.print_maze()
+    maze.print_maze()
     
     
     try:

@@ -87,7 +87,7 @@ def main() -> None:
     end = config["EXIT"]
     x, y = entry
     exit_x, exit_y = end
-    
+
     start_block = maze.grid[y][x]
     end_block = maze.grid[exit_y][exit_x]
 
@@ -96,12 +96,12 @@ def main() -> None:
 
     maze.ft_pattern()
     maze.maze_algo(start_block)
-    
+
     if not config["PERFECT"]:
         maze.random_loops()
 
     maze.solve_maze(start_block, end_block)
-    
+
 
 
     # Open the entry wall
@@ -148,18 +148,6 @@ def main() -> None:
                 f.write(p)
     except Exception as err:
         print(f"ERROR: {err}")
-             
-    
-    
-    
-
-
-
-
-
-
-
-
 
 
 

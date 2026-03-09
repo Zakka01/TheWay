@@ -24,6 +24,7 @@ class Block:
         self.is_path = False
 
 
+
     def has_wall(self, direction: str) -> bool:
 
         """ 
@@ -241,9 +242,6 @@ class MazeGenerator:
                         neighbor_block.pop_wall("bottom")
 
 
-                
-        
-
 
     def solve_maze(self, current_block: Block, exit_block: Block) -> None:
         """ Solve the Maze using Breadth-First Search Algorithm """
@@ -367,8 +365,8 @@ class MazeGenerator:
                 # cell space
                 if block.is_pattern == True:
                     row_top += " █ "
-                # elif block.is_path == True:
-                #     row_top += " H "
+                elif block.is_path == True:
+                    row_top += " @ "
                 else:
                     row_top += "   "
 

@@ -1,5 +1,7 @@
 import sys
 import random
+
+from maze.maze_solver import MazeSolver
 from maze.maze_generator import MazeGenerator
 
 
@@ -10,6 +12,7 @@ def parse_config() -> dict:
         in a Dict, Handle the Error using try/Except to prevent 
         Crashes
     """
+
     # Get Line, Strip it, Split based on '=', Store key value
     try:
         config = {}
@@ -38,7 +41,8 @@ def parse_config() -> dict:
     except Exception as e:
         print(f"ERROR: {e}", sys.stderr)
         sys.exit(1)
-        
+
+
     # Convert the Dict values into valide Data ready to Use
     try:
         for key, value in config.items():
@@ -65,7 +69,7 @@ def parse_config() -> dict:
     except Exception as err:
         print(f"ERROR: {err}", sys.stderr)
         sys.exit(1)
-        
+
     return config
 
 
@@ -75,12 +79,13 @@ def parse_config() -> dict:
 
 
 def main() -> None:
-    
+
     config = parse_config() # Get config file result
 
-    # Create Instance of the Maze to Build Grid and Generate Maze
     maze = MazeGenerator(config) 
+    solve = MazeSolver(maze)
     maze.grid_builder()
+
 
     # Get the Entry Coordinates from the config
     entry = config["ENTRY"]
@@ -100,7 +105,7 @@ def main() -> None:
     if not config["PERFECT"]:
         maze.random_loops()
 
-    maze.solve_maze(start_block, end_block)
+    solve.solve_maze(start_block, end_block)
 
 
 
@@ -126,7 +131,7 @@ def main() -> None:
 
 
     # Print the maze to see the result
-    maze.print_maze()
+    # maze.display_ascii()
     
     
     try:

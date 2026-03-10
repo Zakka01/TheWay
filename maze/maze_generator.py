@@ -1,50 +1,5 @@
 import random
-from collections import deque
-
-class Block:
-    def __init__(self, x: int, y: int):
-
-        """
-            Initialize the attributes : 
-            x, y => ofc the coordinates, 
-            walls => if the block closed or not
-            checked => if the block already visited or not
-            ... 
-        """
-        self.x = x
-        self.y = y
-        self.walls = {
-            "top": True,
-            "bottom": True,
-            "left": True,
-            "right": True
-        }
-        self.checked = False
-        self.is_pattern = False
-        self.is_path = False
-
-
-
-    def has_wall(self, direction: str) -> bool:
-
-        """ 
-            check if block has wall in the given direction
-            and return True if yes , otherwise False
-        """
-        if self.walls[direction] == True:
-            return True
-        return False
-
-
-
-    def pop_wall(self, direction: str) -> None:
-        """
-            Mark the Direction as 'False' to Create Edge 
-            and Make the Two Blocks Connected
-        """
-        self.walls[direction] = False
-
-
+from maze.block import Block
 
 
 
@@ -56,8 +11,6 @@ class MazeGenerator:
             while creating maze instance ,
             extract height and width
         """  
-        self.grid = []
-        self.solution = []
 
         self.height = config["HEIGHT"]
         self.width = config["WIDTH"]
@@ -67,6 +20,22 @@ class MazeGenerator:
 
         self.seed = config["SEED"]
         self.pattern = config["PATTERN"]
+
+        self.grid = []
+        self.solution = []
+
+
+
+    def generate(self):
+        self.grid_builder()
+        self.ft_pattern()
+
+        start = self.grid[self.entry[1]][self.entry[0]]
+
+        self.maze_algo(start)
+
+        if not self.pattern:
+            self.random_loops()
 
 
 
@@ -81,6 +50,29 @@ class MazeGenerator:
             for x in range(self.width):
                 row.append(Block(x, y))
             self.grid.append(row)
+
+
+
+    def remove_wall_between(self, a: Block, b: Block):
+
+        cx, cy = a.x, a.y
+        nx, ny = b.x, b.y
+
+        if cx < nx:
+            a.pop_wall("right")
+            b.pop_wall("left")
+
+        elif cx > nx:
+            a.pop_wall("left")
+            b.pop_wall("right")
+
+        elif cy > ny:
+            a.pop_wall("top")
+            b.pop_wall("bottom")
+
+        elif cy < ny:
+            a.pop_wall("bottom")
+            b.pop_wall("top")
 
 
 
@@ -128,14 +120,16 @@ class MazeGenerator:
         ]
         
         for dy, dx in four:
-            self.grid[dy][dx].is_pattern = True
+            if 0 <= dy < self.height and 0 <= dx < self.width:
+                self.grid[dy][dx].is_pattern = True
         
         for dy, dx in two:
-            self.grid[dy][dx].is_pattern = True
+            if 0 <= dy < self.height and 0 <= dx < self.width:
+                self.grid[dy][dx].is_pattern = True
 
 
     
-    def check_around(self, block: Block) -> list:
+    def get_unvisited_neighbors(self, block: Block) -> list:
         """
             check the 4 possible neighbors while x & y 
             are the coordinates, then we check the bounderies 
@@ -176,7 +170,7 @@ class MazeGenerator:
 
         while stack:
             current_block = stack[-1]
-            valid_neighbors = self.check_around(current_block)
+            valid_neighbors = self.get_unvisited_neighbors(current_block)
 
             if not valid_neighbors:
                 stack.pop()
@@ -184,20 +178,7 @@ class MazeGenerator:
             
             next_block = random.choice(valid_neighbors)
 
-            cx, cy = current_block.x, current_block.y
-            nx, ny = next_block.x, next_block.y
-            if cx < nx:
-                current_block.pop_wall("right")
-                next_block.pop_wall("left")
-            elif cx > nx:
-                current_block.pop_wall("left")
-                next_block.pop_wall("right")
-            elif cy > ny:
-                current_block.pop_wall("top")
-                next_block.pop_wall("bottom")
-            elif cy < ny:
-                current_block.pop_wall("bottom")
-                next_block.pop_wall("top")
+            self.remove_wall_between(current_block, next_block)
 
             next_block.checked = True
             stack.append(next_block)
@@ -205,6 +186,7 @@ class MazeGenerator:
 
 
     def random_loops(self) -> None:
+        """ Add Random loops to make the Maze Imperfect """
         
         for y in range(self.height):
             for x in range(self.width):
@@ -228,77 +210,7 @@ class MazeGenerator:
                     neighbor_block = self.grid[ny][nx]
 
                     # Remove walls betweeb two blocks
-                    if nx > x:
-                        current_block.pop_wall("right")
-                        neighbor_block.pop_wall("left")
-                    elif nx < x:
-                        current_block.pop_wall("left")
-                        neighbor_block.pop_wall("right")
-                    elif ny > y:
-                        current_block.pop_wall("bottom")
-                        neighbor_block.pop_wall("top")
-                    elif ny < y:
-                        current_block.pop_wall("top")
-                        neighbor_block.pop_wall("bottom")
-
-
-
-    def solve_maze(self, current_block: Block, exit_block: Block) -> None:
-        """ Solve the Maze using Breadth-First Search Algorithm """
-
-        blocks = deque([current_block])
-        visited = set()
-        familly_map = {current_block: None}
-        visited.add(current_block)
-
-        while blocks:
-            current_block = blocks.popleft()
-            
-            # stop if we reach the exit and save its block
-            if (current_block.x, current_block.y) == (exit_block.x, exit_block.y):
-                break
-
-            cx, cy = current_block.x, current_block.y
-            neighbors = [(cx, cy-1), (cx, cy+1), (cx-1, cy), (cx+1, cy)]
-
-            for nx, ny in neighbors:
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    neighbor_block = self.grid[ny][nx]
-
-                    if neighbor_block not in visited:
-                        # check connected walls 
-                        if cx < nx:
-                            if not current_block.has_wall("right") and not neighbor_block.has_wall("left"):
-                                blocks.append(neighbor_block)
-
-                        elif cx > nx:
-                            if not current_block.has_wall("left") and not neighbor_block.has_wall("right"):
-                                blocks.append(neighbor_block)
-
-                        elif cy > ny:
-                            if not current_block.has_wall("top") and not neighbor_block.has_wall("bottom"):
-                                blocks.append(neighbor_block)
-
-                        elif cy < ny:
-                            if not current_block.has_wall("bottom") and not neighbor_block.has_wall("top"):
-                                blocks.append(neighbor_block)
-                        else:
-                            continue
-                        
-                        if neighbor_block in blocks:
-                            visited.add(neighbor_block)
-                            familly_map[neighbor_block] = current_block
-
-        #trace back the path
-        key_block = self.grid[exit_block.y][exit_block.x]
-
-        while key_block is not None:
-            self.solution.append(key_block)
-            key_block = familly_map.get(key_block)
-
-        self.solution.reverse()
-        for block in self.solution:
-            block.is_path = True
+                    self.remove_wall_between(current_block, neighbor_block)
 
 
 
@@ -341,46 +253,4 @@ class MazeGenerator:
                 path.append("N")
         
         return path
-                
 
-
-    """   Just a small visualizer to see the generated maze """
-    def print_maze(self):
-        top_row = "o"
-
-        for x in range(self.width):
-            if self.grid[0][x].walls["top"]:
-                top_row += "---+"
-            else:
-                top_row += "   +"
-        print(top_row)
-
-        for y in range(self.height):
-            row_top = "|"
-            row_bottom = "+"
-
-            for x in range(self.width):
-                block = self.grid[y][x]
-
-                # cell space
-                if block.is_pattern == True:
-                    row_top += " █ "
-                elif block.is_path == True:
-                    row_top += " @ "
-                else:
-                    row_top += "   "
-
-                # right wall
-                if block.walls["right"]:
-                    row_top += "|"
-                else:
-                    row_top += " "
-
-                # bottom wall
-                if block.walls["bottom"]:
-                    row_bottom += "---+"
-                else:
-                    row_bottom += "   +"
-
-            print(row_top)
-            print(row_bottom)

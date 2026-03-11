@@ -1,42 +1,65 @@
 import pygame
 
 class MazeRenderer:
-
     def __init__(self, maze):
         pygame.init()
         
         self.maze = maze
         self.block_size = 40
+        self.wall_thickness = 8
         self.window_height = maze.height * self.block_size
         self.window_width = maze.width * self.block_size
 
         self.screen = pygame.display.set_mode(
             (self.window_width, self.window_height)
         )
-        pygame.display.set_caption("Do Not Get Lost")
+        pygame.display.set_caption("Do Not Get Lost - Forest Maze")
+
+        # Colors
+        self.bg_color = (30, 30, 30)
+        self.path_color = (180, 140, 50)
         
-        self.bg_color   = (0, 0, 0)
-        self.block_color   = (0, 0, 40)
-        self.wall_color = (255, 255, 255)
+        # Load textures
+        self.grass_texture = pygame.transform.scale(
+            pygame.image.load("assets/grass_texture.png"), 
+            (self.block_size, self.block_size)
+        )
+        self.tree_texture = pygame.transform.scale(
+            pygame.image.load("assets/tree_texture.png"),
+            (self.block_size, self.block_size)
+        )
+        self.path_texture = pygame.transform.scale(
+            pygame.image.load("assets/path_texture.png"),
+            (self.block_size - 20, self.block_size - 20)
+        )
+        self.stone_texture = pygame.transform.scale(
+            pygame.image.load("assets/stone_texture.png"),
+            (self.block_size, self.block_size)
+        )
+        self.player = pygame.transform.scale(
+            pygame.image.load("assets/farmer.jpg"),
+            (self.block_size, self.block_size)
+        )
+        self.entry_texture = pygame.transform.scale(
+            pygame.image.load("assets/entry.png"),
+            (self.block_size - 10, self.block_size - 10)
+        )
+        self.exit_texture = pygame.transform.scale(
+            pygame.image.load("assets/exit.png"),
+            (self.block_size - 10, self.block_size - 10)
+        )
 
-        self.path_color = (0, 255, 20)
-        self.entry_color= (0, 0, 255)
-        self.exit_color = (255, 0, 0)
 
 
 
-    def run(self) -> None:
-
+    def rendering(self):
         running = True
         while running:
-
             self.screen.fill(self.bg_color)
-
-            events = pygame.event.get()
-            for event in events:
+            for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            
+
             self.draw_maze()
             pygame.display.flip()
 
@@ -44,100 +67,70 @@ class MazeRenderer:
 
 
 
-    def draw_maze(self) -> None:
 
+    def draw_maze(self):
         for row in self.maze.grid:
             for block in row:
                 px = block.x * self.block_size
                 py = block.y * self.block_size
 
+                # Draw grass base
                 self.draw_block(px, py)
 
+                # Draw path tiles
                 if block.is_path:
                     self.draw_path(px, py)
+
+                # Draw pattern blocks
+                if block.is_pattern:
+                    self.draw_pattern(px, py)
+
+                # Entry / Exit
                 if block == self.maze.entry:
                     self.draw_entry(px, py)
                 if block == self.maze.exit:
                     self.draw_exit(px, py)
 
+                # Walls with tree textures
                 self.draw_walls(block, px, py)
 
 
 
-    def draw_walls(self, block, px, py) -> None:
-        
+
+    def draw_block(self, px, py):
+        self.screen.blit(self.grass_texture, (px, py))
+
+
+
+
+    def draw_walls(self, block, px, py):
+        t = self.tree_texture
+        s = self.block_size
+        if block.is_pattern:
+            w = self.wall_thickness - 7.5
+        else:
+            w = self.wall_thickness
+
         if block.has_wall("top"):
-            pygame.draw.line(
-                self.screen,
-                self.wall_color,
-                (px, py),
-                (px + self.block_size, py),
-                4
-            )
-
+            self.screen.blit(pygame.transform.scale(t, (s, w)), (px, py))
         if block.has_wall("right"):
-            pygame.draw.line(
-                self.screen,
-                self.wall_color,
-                (px + self.block_size, py),
-                (px + self.block_size, py + self.block_size),
-                7
-            )
-
+            self.screen.blit(pygame.transform.rotate(pygame.transform.scale(t, (w, s)), 0), (px + s - w, py))
         if block.has_wall("bottom"):
-            pygame.draw.line(
-                self.screen, 
-                self.wall_color, 
-                (px, py + self.block_size), 
-                (px + self.block_size, py + self.block_size), 
-                4
-            )
-
+            self.screen.blit(pygame.transform.scale(t, (s, w)), (px, py + s - w))
         if block.has_wall("left"):
-            pygame.draw.line(
-                self.screen,
-                self.wall_color,
-                (px, py),
-                (px, py + self.block_size), 
-                7
-            )
+            self.screen.blit(pygame.transform.rotate(pygame.transform.scale(t, (w, s)), 0), (px, py))
 
 
 
-    def draw_block(self, px, py) -> None:
 
-        pygame.draw.rect(
-            self.screen,
-            self.block_color,
-            (px, py, self.block_size, self.block_size)
-        )
+    def draw_path(self, px, py):
+        self.screen.blit(self.path_texture, (px + 10, py + 10))
 
+    def draw_pattern(self, px, py):
+        self.screen.blit(self.stone_texture, (px, py))
 
+    def draw_entry(self, px, py):
+        self.screen.blit(self.entry_texture, (px + 5, py + 5))
 
-    def draw_path(self, px, py) -> None:
-
-        pygame.draw.rect(
-            self.screen,
-            self.path_color,
-            (px + 10, py + 10, self.block_size - 20, self.block_size - 20)
-        )
-
-
-
-    def draw_entry(self, px, py) -> None:
-
-        pygame.draw.rect(
-            self.screen,
-            self.entry_color,
-            (px + 6, py + 6, self.block_size - 12, self.block_size - 12)
-        )
-
-
-
-    def draw_exit(self, px, py) -> None:
-
-        pygame.draw.rect(
-            self.screen,
-            self.exit_color,
-            (px + 6, py + 6, self.block_size - 12, self.block_size - 12)
-        )
+    def draw_exit(self, px, py):
+        self.screen.blit(self.exit_texture, (px + 5, py + 5))

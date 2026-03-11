@@ -157,7 +157,7 @@ def main() -> None:
 
 
     render = MazeRenderer(maze)
-    render.run()
+    render.rendering()
     render.draw_maze()
 
 

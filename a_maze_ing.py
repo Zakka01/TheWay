@@ -3,6 +3,7 @@ import random
 
 from maze.maze_solver import MazeSolver
 from maze.maze_generator import MazeGenerator
+from maze.maze_renderer import MazeRenderer
 
 
 def parse_config() -> dict:
@@ -81,42 +82,45 @@ def parse_config() -> dict:
 def main() -> None:
 
     config = parse_config() # Get config file result
-
     maze = MazeGenerator(config) 
-    solve = MazeSolver(maze)
     maze.grid_builder()
 
 
+
     # Get the Entry Coordinates from the config
-    entry = config["ENTRY"]
-    end = config["EXIT"]
-    x, y = entry
-    exit_x, exit_y = end
+    try:
+        entry_x, entry_y = maze.entry
+        exit_x, exit_y   = maze.exit
 
-    start_block = maze.grid[y][x]
-    end_block = maze.grid[exit_y][exit_x]
+        # Make sure they are inside the maze
+        if not (0 <= entry_x < maze.width and 0 <= entry_y < maze.height):
+            raise ValueError(f"Entry coordinates {maze.entry} out of bounds")
+        if not (0 <= exit_x < maze.width and 0 <= exit_y < maze.height):
+            raise ValueError(f"Exit coordinates {maze.exit} out of bounds")
 
-    maze.entry = start_block
-    maze.exit = end_block
+        start_block = maze.grid[entry_y][entry_x]
+        end_block   = maze.grid[exit_y][exit_x]
 
-    maze.ft_pattern()
-    maze.maze_algo(start_block)
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        exit(1)
 
-    if not config["PERFECT"]:
-        maze.random_loops()
-
-    solve.solve_maze(start_block, end_block)
+    
+    # generate and solve maze
+    maze.generate_all(start_block)
+    solve = MazeSolver(maze)
+    # solve.solve_maze(start_block, end_block)
 
 
 
     # Open the entry wall
-    if y == 0:
+    if entry_y == 0:
         start_block.pop_wall("top")
-    elif y == maze.height - 1:
+    elif entry_y == maze.height - 1:
         start_block.pop_wall("bottom")
-    elif x == 0:
+    elif entry_x == 0:
         start_block.pop_wall("left")
-    elif x == maze.width - 1:
+    elif entry_x == maze.width - 1:
         start_block.pop_wall("right")
 
     # Open the exit wall
@@ -130,10 +134,7 @@ def main() -> None:
         end_block.pop_wall("right")
 
 
-    # Print the maze to see the result
-    # maze.display_ascii()
-    
-    
+    # write the output to a maze.txt file    
     try:
         hex_output = maze.hex_encoding()
         path = maze.path_direction()
@@ -144,7 +145,7 @@ def main() -> None:
                 f.write(''.join(row) + "\n")
 
             f.write("\n")
-            f.write(f"{x},{y}")
+            f.write(f"{entry_x},{entry_y}")
             f.write("\n")
             f.write(f"{exit_x},{exit_y}")
 
@@ -155,10 +156,9 @@ def main() -> None:
         print(f"ERROR: {err}")
 
 
-
-
-
-
+    render = MazeRenderer(maze)
+    render.run()
+    render.draw_maze()
 
 
 

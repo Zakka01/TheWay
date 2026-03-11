@@ -14,6 +14,7 @@ class MazeGenerator:
 
         self.height = config["HEIGHT"]
         self.width = config["WIDTH"]
+        self.perfect = config["PERFECT"]
 
         self.entry = config["ENTRY"]
         self.exit = config["EXIT"]
@@ -25,16 +26,11 @@ class MazeGenerator:
         self.solution = []
 
 
-
-    def generate(self):
-        self.grid_builder()
+    def generate_all(self, start_block):
         self.ft_pattern()
+        self.maze_algo(start_block)
 
-        start = self.grid[self.entry[1]][self.entry[0]]
-
-        self.maze_algo(start)
-
-        if not self.pattern:
+        if not self.perfect:
             self.random_loops()
 
 
@@ -253,4 +249,5 @@ class MazeGenerator:
                 path.append("N")
         
         return path
+
 

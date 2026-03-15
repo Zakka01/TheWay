@@ -20,6 +20,8 @@ class Block:
         self.is_pattern = False
         self.is_path = False
 
+        self.visited_by_bfs = False
+
 
 
     def has_wall(self, direction: str) -> bool:

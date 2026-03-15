@@ -19,6 +19,8 @@ class MazeSolver():
         self.family_map = {}
         self.exit_block = None
         self.solving = True
+
+        self.show_visited = True
         
         
         
@@ -44,7 +46,6 @@ class MazeSolver():
 
     def build_solution(self, familly_map, exit_block):
 
-        #trace back the path
         key = self.grid[exit_block.y][exit_block.x]
 
         while key is not None:
@@ -52,8 +53,6 @@ class MazeSolver():
             key = familly_map.get(key)
 
         self.solution.reverse()
-        for block in self.solution:
-            block.is_path = True
 
 
     
@@ -76,12 +75,19 @@ class MazeSolver():
             return False
 
         current_block = self.queue.popleft()
+        current_block.visited_by_bfs = True
         
         # stop if we reach the exit and save its block
         if current_block == self.exit_block:
             self.build_solution(self.family_map, self.exit_block)
             self.solving = False
+        
+            for row in self.grid:
+                for block in row:
+                    block.visited_by_bfs = False
+
             return False
+
 
         cx, cy = current_block.x, current_block.y
         neighbors = [(cx, cy-1), (cx, cy+1), (cx-1, cy), (cx+1, cy)]

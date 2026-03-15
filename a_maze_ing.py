@@ -75,19 +75,15 @@ def parse_config() -> dict:
 
 
 
-
-
-
-
 def main() -> None:
 
-    config = parse_config() # Get config file result
+    config = parse_config()
+
+
     maze = MazeGenerator(config)
     maze.grid_builder()
 
 
-
-    # Get the Entry Coordinates from the config
     try:
         entry_x, entry_y = maze.entry
         exit_x, exit_y   = maze.exit
@@ -105,7 +101,7 @@ def main() -> None:
         print(f"ERROR: {e}")
         exit(1)
 
-    
+
     # generate and solve maze
     maze.start_generation(start_block)
     maze.generate_all()
@@ -115,7 +111,6 @@ def main() -> None:
 
 
 
-    # Open the entry wall
     if entry_y == 0:
         start_block.pop_wall("top")
     elif entry_y == maze.height - 1:
@@ -125,7 +120,6 @@ def main() -> None:
     elif entry_x == maze.width - 1:
         start_block.pop_wall("right")
 
-    # Open the exit wall
     if exit_y == 0:
         end_block.pop_wall("top")
     elif exit_y == maze.height - 1:
@@ -136,7 +130,6 @@ def main() -> None:
         end_block.pop_wall("right")
 
 
-    # write the output to a maze.txt file
     try:
         hex_output = maze.hex_encoding()
         path = maze.path_direction()
@@ -160,11 +153,6 @@ def main() -> None:
 
     render = MazeRenderer(maze, solve)
     render.rendering()
-    render.draw_maze()
-
-
-
-
 
 
 

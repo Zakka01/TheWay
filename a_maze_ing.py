@@ -81,6 +81,8 @@ def main() -> None:
 
 
     maze = MazeGenerator(config)
+    solve = MazeSolver(maze)
+
     maze.grid_builder()
 
 
@@ -96,7 +98,6 @@ def main() -> None:
 
         start_block = maze.grid[entry_y][entry_x]
         end_block   = maze.grid[exit_y][exit_x]
-
     except ValueError as e:
         print(f"ERROR: {e}")
         exit(1)
@@ -106,9 +107,7 @@ def main() -> None:
     maze.start_generation(start_block)
     maze.generate_all()
 
-    solve = MazeSolver(maze)
     solve.start_solving(start_block, end_block)
-
 
 
     if entry_y == 0:

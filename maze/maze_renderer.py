@@ -13,10 +13,12 @@ class MazeRenderer:
         
         self.maze = maze
         self.solve = solve
+        self.toggle_path = True
+        self.maze_design = 0
 
         self.player_idx = 0
         self.block_size = 30
-        self.wall_thickness = 5
+        self.wall_thickness = 3
         self.menu_height = 30
 
         self.window_height = maze.height * self.block_size + self.menu_height + 10 # 20 for padding
@@ -44,7 +46,7 @@ class MazeRenderer:
             pygame.image.load("assets/path_texture.png"),
             (self.block_size - 20, self.block_size - 20)
         )
-        self.stone_texture = pygame.transform.scale(
+        self.ft_texture = pygame.transform.scale(
             pygame.image.load("assets/stone_texture.png"),
             (self.block_size, self.block_size)
         )
@@ -61,13 +63,38 @@ class MazeRenderer:
             (self.block_size - 10, self.block_size - 10)
         )
 
+        
+        self.stone_bg = pygame.transform.scale(
+            pygame.image.load("assets/stone_background.png"), 
+            (self.block_size, self.block_size)
+        )
+        self.stone_wall = pygame.transform.scale(
+            pygame.image.load("assets/stone_wall.png"), 
+            (self.block_size, self.block_size)
+        )
+        self.ft_texture2 = pygame.transform.scale(
+            pygame.image.load("assets/ft_background.png"),
+            (self.block_size, self.block_size)
+        )
+        self.entry_texture2 = pygame.transform.scale(
+            pygame.image.load("assets/blackhole_entry.png"),
+            (self.block_size - 10, self.block_size - 10)
+        )
+        self.exit_texture2 = pygame.transform.scale(
+            pygame.image.load("assets/exit_gold.png"),
+            (self.block_size - 10, self.block_size - 10)
+        )
+        
+
+
+
 
     def draw_menu(self):
         font = pygame.font.SysFont(None, 24)
         menu_options = [
             "[ 1 ]   Re-generate",
             "[ 2 ]   Toggle Path",
-            "[ 3 ]   colors",
+            "[ 3 ]   Colors",
             "[ 4 ]   Quit"
         ]
         x_offset = 10
@@ -90,6 +117,7 @@ class MazeRenderer:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    
             
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
@@ -98,6 +126,15 @@ class MazeRenderer:
                         self.solve.reset_solve()
                         self.player_idx = 0
                         generating = True
+
+                    if event.key == pygame.K_2:
+                        self.toggle_path = not self.toggle_path
+
+                    if event.key == pygame.K_3:
+                        self.maze_design += 1
+
+                    if event.key == pygame.K_4:
+                        running = False
 
             # Generate maze, step on each call
             if generating:
@@ -144,7 +181,7 @@ class MazeRenderer:
 
                 self.draw_walls(block, px, py)
                 
-                if block.is_path:
+                if self.toggle_path and block.is_path:
                     self.draw_path(block, px, py)
 
                 if block.visited_by_bfs:
@@ -154,26 +191,34 @@ class MazeRenderer:
                         (px, py, self.block_size, self.block_size)
                     )
 
-                if block == self.maze.current_block:
+                if block == self.maze.current_block and (block.x, block.y) != self.maze.entry:
                     self.draw_current(px, py)
 
-                if (block.x, block.y) == self.maze.exit:
-                    self.draw_exit(px, py)
                 if (block.x, block.y) == self.maze.entry:
                     self.draw_entry(px, py)
+                if (block.x, block.y) == self.maze.exit:
+                    self.draw_exit(px, py)
 
 
 
     def draw_block(self, px, py):
-        self.screen.blit(self.grass_texture, (px, py))
+        if self.maze_design % 2 == 1:
+            block_background = self.grass_texture
+        elif self.maze_design % 2 == 0:
+            block_background = self.stone_bg
+        self.screen.blit(block_background, (px, py))
 
 
 
     def draw_current(self, px, py):
+        if self.maze_design % 2 == 1:
+            current_color = (245,245,220)
+        elif self.maze_design % 2 == 0:
+            current_color = (244, 244, 244)
         padding = 4
         pygame.draw.rect(
             self.screen,
-            (0, 0, 0),
+            current_color,
             (
                 px + padding,
                 py + padding,
@@ -186,21 +231,26 @@ class MazeRenderer:
 
 
     def draw_walls(self, block, px, py):
-        t = self.tree_texture
-        s = self.block_size
+
+        if self.maze_design % 2 == 1:
+            texture = self.tree_texture
+        elif self.maze_design % 2 == 0:
+            texture = self.stone_wall
+            
+        size = self.block_size
         if block.is_pattern:
-            w = 2
+            width = 2
         else:
-            w = self.wall_thickness
+            width = self.wall_thickness
 
         if block.has_wall("top"):
-            self.screen.blit(pygame.transform.scale(t, (s, w)), (px, py))
+            self.screen.blit(pygame.transform.scale(texture, (size, width)), (px, py))
         if block.has_wall("right"):
-            self.screen.blit(pygame.transform.rotate(pygame.transform.scale(t, (w, s)), 0), (px + s - w, py))
+            self.screen.blit(pygame.transform.rotate(pygame.transform.scale(texture, (width, size)), 0), (px + size - width, py))
         if block.has_wall("bottom"):
-            self.screen.blit(pygame.transform.scale(t, (s, w)), (px, py + s - w))
+            self.screen.blit(pygame.transform.scale(texture, (size, width)), (px, py + size - width))
         if block.has_wall("left"):
-            self.screen.blit(pygame.transform.rotate(pygame.transform.scale(t, (w, s)), 0), (px, py))
+            self.screen.blit(pygame.transform.rotate(pygame.transform.scale(texture, (width, size)), 0), (px, py))
 
 
 
@@ -265,23 +315,36 @@ class MazeRenderer:
 
 
     def draw_pattern(self, px, py):
-        self.screen.blit(self.stone_texture, (px, py))
+        if self.maze_design % 2 == 1:
+            ft_txt = self.ft_texture
+        elif self.maze_design % 2 == 0:
+            ft_txt = self.ft_texture2
+            
+        self.screen.blit(ft_txt, (px, py))
 
 
 
     def draw_entry(self, px, py):
+        if self.maze_design % 2 == 1:
+            entry_txt = self.entry_texture
+        elif self.maze_design % 2 == 0:
+            entry_txt = self.entry_texture2
         padding = 5
         self.screen.blit(
-            self.entry_texture,
+            entry_txt,
             (px + padding, py + padding)
         )
 
 
 
     def draw_exit(self, px, py):
+        if self.maze_design % 2 == 1:
+            exit_txt = self.exit_texture
+        elif self.maze_design % 2 == 0:
+            exit_txt = self.exit_texture2
         padding = 3
         self.screen.blit(
-            self.exit_texture,
+            exit_txt,
             (px + padding, py + padding)
         )
 

@@ -5,6 +5,7 @@ from collections import deque
 class MazeSolver():
 
     def __init__(self, maze):
+        self.maze = maze
         self.height = maze.height
         self.width = maze.width
 
@@ -28,6 +29,7 @@ class MazeSolver():
         self.visited = set()
         self.family_map = {}
         
+        self.grid = self.maze.grid
         x, y = self.entry
         ex, ey = self.exit
 
@@ -38,7 +40,7 @@ class MazeSolver():
         
         
         
-    def is_connected(self, current_block, neighbor_block):
+    def is_connected(self, current_block, neighbor_block) -> bool:
         cx, cy = current_block.x, current_block.y
         nx, ny = neighbor_block.x, neighbor_block.y
 
@@ -58,7 +60,7 @@ class MazeSolver():
 
 
 
-    def build_solution(self, familly_map, exit_block):
+    def build_solution(self, familly_map, exit_block) -> None:
 
         key = self.grid[exit_block.y][exit_block.x]
 
@@ -70,14 +72,14 @@ class MazeSolver():
 
 
     
-    
-    def start_solving(self, start_block, exit_block):
+    def start_solving(self, start_block, exit_block) -> None:
 
         self.queue = deque([start_block])
         self.visited = {start_block}
         self.family_map = {start_block: None}
 
         self.exit_block = exit_block
+
 
 
     def solve_maze(self) -> bool:

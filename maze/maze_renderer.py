@@ -27,7 +27,7 @@ class MazeRenderer:
         self.screen = pygame.display.set_mode(
             (self.window_width, self.window_height)
         )
-        pygame.display.set_caption("Do Not Get Lost - Forest Maze")
+        pygame.display.set_caption("A-Maze-ing")
         
         self.clock = pygame.time.Clock()
 

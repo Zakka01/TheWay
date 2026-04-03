@@ -60,13 +60,20 @@ def parse_config() -> dict:
 
             elif key == "PERFECT":
                 value = value.lower().capitalize()
-                if value == "0" or value == "1" or value == "+1" or value == "+0" or value == "-0":
+                if (
+                    value == "0"
+                    or value == "1"
+                    or value == "+1"
+                    or value == "+0"
+                    or value == "-0"
+                ):
                     config[key] = int(value)
                 elif value in ["True", "False"]:
                     config[key] = value == "True"
                 else:
-                    raise ValueError("'PERFECT' value must be (True - False"
-                                     " - 0 - 1)")
+                    raise ValueError(
+                        "'PERFECT' value must be (True - False" " - 0 - 1)"
+                    )
 
             elif key == "OUTPUT_FILE":
                 lower_value = value.lower()
@@ -108,7 +115,7 @@ def main() -> None:
         start_block = maze.grid[entry_y][entry_x]
         end_block = maze.grid[exit_y][exit_x]
     except ValueError as e:
-        print(f"ERROR: {e}")
+        print(f"ERROR: {e}", file=sys.stderr)
         exit(1)
 
     # generate and solve maze

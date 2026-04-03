@@ -1,3 +1,5 @@
 /venv
+/mazegen
+__pycache__/
 .gitignore
 output_validator.py

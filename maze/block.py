@@ -1,4 +1,5 @@
 class Block:
+
     def __init__(self, x: int, y: int):
 
         """
@@ -22,19 +23,15 @@ class Block:
 
         self.visited_by_bfs = False
 
-
-
     def has_wall(self, direction: str) -> bool:
 
         """ 
             check if block has wall in the given direction
             and return True if yes , otherwise False
         """
-        if self.walls[direction] == True:
+        if self.walls[direction] is True:
             return True
         return False
-
-
 
     def pop_wall(self, direction: str) -> None:
         """

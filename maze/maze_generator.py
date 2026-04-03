@@ -2,15 +2,14 @@ import random
 from maze.block import Block
 
 
-
 class MazeGenerator:
 
     def __init__(self, config: dict):
         """
-            Take the config dict as an Attribute 
-            while creating maze instance ,
-            extract height and width
-        """  
+        Take the config dict as an Attribute
+        while creating maze instance ,
+        extract height and width
+        """
 
         self.height = config["HEIGHT"]
         self.width = config["WIDTH"]
@@ -27,7 +26,6 @@ class MazeGenerator:
         self.current_block = None
         self.stack = []
 
-
     def reset_maze(self, seed) -> None:
         self.seed = seed
         self.grid = []
@@ -40,7 +38,6 @@ class MazeGenerator:
         self.start_generation(start_block)
         self.ft_pattern()
 
-
     def generate_all(self) -> None:
         self.ft_pattern()
         self.maze_generation_dfs()
@@ -48,21 +45,16 @@ class MazeGenerator:
         if not self.perfect:
             self.random_loops()
 
-
-
     def grid_builder(self) -> None:
-        
         """
-            Build the Grid System Based On 
-            the HEIGHT &&& WIDTH from Config File 
+        Build the Grid System Based On
+        the HEIGHT &&& WIDTH from Config File
         """
         for y in range(self.height):
             row = []
             for x in range(self.width):
                 row.append(Block(x, y))
             self.grid.append(row)
-
-
 
     def remove_wall_between(self, a: Block, b: Block) -> None:
 
@@ -85,69 +77,61 @@ class MazeGenerator:
             a.pop_wall("bottom")
             b.pop_wall("top")
 
-
-
     def ft_pattern(self) -> None:
         """
-            Get the Pattern value from config file
-            - split the number and put them on list then
-            loop thow each one and apply it to the maze 
-            as offset from the digit's center
+        Get the Pattern value from config file
+        - split the number and put them on list then
+        loop thow each one and apply it to the maze
+        as offset from the digit's center
         """
-        
+
         cx = self.width // 2
         cy = self.height // 2
-        
+
         four = [
-            (cy-2, cx-3),
-            (cy-1, cx-3),
-            (cy, cx-1),
-            (cy, cx-2),
-            (cy, cx-3),
-            (cy, cx-1),
-            (cy+1, cx-1),
-            (cy+2, cx-1)
+            (cy - 2, cx - 3),
+            (cy - 1, cx - 3),
+            (cy, cx - 1),
+            (cy, cx - 2),
+            (cy, cx - 3),
+            (cy, cx - 1),
+            (cy + 1, cx - 1),
+            (cy + 2, cx - 1),
         ]
-        
+
         two = [
-            (cy+2, cx+1),
-            (cy+2, cx+2),
-            (cy-1, cx+3),
-            (cy+2, cx+3),
-            (cy, cx+1),
-            (cy, cx+2),
-            (cy, cx+3),
-            (cy+1, cx+1),
-            (cy-2, cx+1),
-            (cy-2, cx+2),
-            (cy-2, cx+3)
+            (cy + 2, cx + 1),
+            (cy + 2, cx + 2),
+            (cy - 1, cx + 3),
+            (cy + 2, cx + 3),
+            (cy, cx + 1),
+            (cy, cx + 2),
+            (cy, cx + 3),
+            (cy + 1, cx + 1),
+            (cy - 2, cx + 1),
+            (cy - 2, cx + 2),
+            (cy - 2, cx + 3),
         ]
-        
+
         for dy, dx in four:
             if 0 <= dy < self.height and 0 <= dx < self.width:
                 self.grid[dy][dx].is_pattern = True
-        
+
         for dy, dx in two:
             if 0 <= dy < self.height and 0 <= dx < self.width:
                 self.grid[dy][dx].is_pattern = True
 
-
-    
     def get_unvisited_neighbors(self, block: Block) -> list:
         """
-            check the 4 possible neighbors while x & y 
-            are the coordinates, then we check the bounderies 
-            if valid, to append the valid neighbor to the list
+        check the 4 possible neighbors while x & y
+        are the coordinates, then we check the bounderies
+        if valid, to append the valid neighbor to the list
         """
-        valid_neighbors = [] 
+        valid_neighbors = []
         x, y = block.x, block.y
 
-        neighbors = [(x, y-1),
-                    (x, y+1),
-                    (x-1, y),
-                    (x+1, y)
-                ]
-        
+        neighbors = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
+
         # loop over Neighbors & Add valid ones that hasn't checked yet
         for n in neighbors:
             nx, ny = n
@@ -159,25 +143,20 @@ class MazeGenerator:
 
         return valid_neighbors
 
-
-
     def start_generation(self, start_block: Block) -> None:
         random.seed(self.seed)
 
         self.stack = [start_block]
         start_block.checked = True
 
-
-
     def maze_generation_dfs(self) -> bool:
-        
         """
-            Start at the Current Block, Check for Neighbors
-            if any choose One Random, remove wall between current 
-            and that neighbor, mark it as checked and append block
-            to the stack, if no neighbor found remove the 
-            last item (the current block) and access the last one [-1]
-            this is BackTracking :) 
+        Start at the Current Block, Check for Neighbors
+        if any choose One Random, remove wall between current
+        and that neighbor, mark it as checked and append block
+        to the stack, if no neighbor found remove the
+        last item (the current block) and access the last one [-1]
+        this is BackTracking :)
         """
         if not self.stack:
             return False
@@ -189,7 +168,7 @@ class MazeGenerator:
         if not valid_neighbors:
             self.stack.pop()
             return True
-        
+
         next_block = random.choice(valid_neighbors)
 
         self.remove_wall_between(current_block, next_block)
@@ -199,11 +178,9 @@ class MazeGenerator:
 
         return True
 
-
-
     def random_loops(self) -> None:
-        """ Add Random loops to make the Maze Imperfect """
-        
+        """Add Random loops to make the Maze Imperfect"""
+
         for y in range(self.height):
             for x in range(self.width):
 
@@ -212,23 +189,21 @@ class MazeGenerator:
                     continue
 
                 neighbors = []
-                if x + 1 < self.width and not self.grid[y][x+1].is_pattern:
-                    neighbors.append((x+1, y))
-                if y + 1 < self.height and not self.grid[y+1][x].is_pattern:
-                    neighbors.append((x, y+1))
-                if x - 1 >= 0 and not self.grid[y][x-1].is_pattern:
-                    neighbors.append((x-1, y))
-                if y - 1 >= 0 and not self.grid[y-1][x].is_pattern:
-                    neighbors.append((x, y-1))
+                if x + 1 < self.width and not self.grid[y][x + 1].is_pattern:
+                    neighbors.append((x + 1, y))
+                if y + 1 < self.height and not self.grid[y + 1][x].is_pattern:
+                    neighbors.append((x, y + 1))
+                if x - 1 >= 0 and not self.grid[y][x - 1].is_pattern:
+                    neighbors.append((x - 1, y))
+                if y - 1 >= 0 and not self.grid[y - 1][x].is_pattern:
+                    neighbors.append((x, y - 1))
 
                 if neighbors:
                     nx, ny = random.choice(neighbors)
                     neighbor_block = self.grid[ny][nx]
 
-                    # Remove walls betweeb two blocks
+                    # Remove walls between two blocks
                     self.remove_wall_between(current_block, neighbor_block)
-
-
 
     def hex_encoding(self) -> list:
         hex_lst = "0123456789ABCDEF"
@@ -238,10 +213,14 @@ class MazeGenerator:
             for col in range(self.width):
                 value = 0
                 block = self.grid[row][col]
-                if block.has_wall("top"): value += 1
-                if block.has_wall("right"): value += 2
-                if block.has_wall("bottom"): value += 4
-                if block.has_wall("left"): value += 8
+                if block.has_wall("top"):
+                    value += 1
+                if block.has_wall("right"):
+                    value += 2
+                if block.has_wall("bottom"):
+                    value += 4
+                if block.has_wall("left"):
+                    value += 8
 
                 block_hex = hex_lst[value]
                 output.append(block_hex)
@@ -249,16 +228,14 @@ class MazeGenerator:
 
         return hex_output
 
-
-
     def path_direction(self) -> list:
         path = []
         solution = self.solution
-        
+
         for i in range(len(solution) - 1):
             current = solution[i]
             nxt = solution[i + 1]
-            
+
             if nxt.x > current.x:
                 path.append("E")
             elif nxt.x < current.x:
@@ -267,5 +244,5 @@ class MazeGenerator:
                 path.append("S")
             elif nxt.y < current.y:
                 path.append("N")
-        
+
         return path

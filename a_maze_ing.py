@@ -36,6 +36,7 @@ def parse_config() -> dict:
                         config[key] = value
         else:
             raise IndexError("No Config File Given")
+
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)
@@ -43,6 +44,7 @@ def parse_config() -> dict:
     # Convert the Dict values into valide Data ready to Use
     try:
         for key, value in config.items():
+
             if key in ["ENTRY", "EXIT"]:
                 x, y = value.split(",")
                 x, y = int(x), int(y)
@@ -50,21 +52,31 @@ def parse_config() -> dict:
                     raise ValueError(f"{key} coordinates out of bounds")
                 config[key] = (x, y)
 
-            elif key in ["WIDTH", "HEIGHT", "SEED", "PATTERN"]:
-                config[key] = int(value)
+            elif key in ["WIDTH", "HEIGHT", "SEED"]:
+                try:
+                    config[key] = int(value)
+                except (TypeError, ValueError):
+                    raise ValueError(f"'{value}' must be an int")
 
             elif key == "PERFECT":
                 value = value.lower().capitalize()
-                if value not in ["True", "False"]:
-                    raise ValueError(f"Invalid PERFECT value: {value}")
-                config[key] = value == "True"
+                if value == "0" or value == "1" or value == "+1" or value == "+0" or value == "-0":
+                    config[key] = int(value)
+                elif value in ["True", "False"]:
+                    config[key] = value == "True"
+                else:
+                    raise ValueError("'PERFECT' value must be (True - False"
+                                     " - 0 - 1)")
 
             elif key == "OUTPUT_FILE":
                 lower_value = value.lower()
-                basename, format = lower_value.split(".", 1)
-                if format != "txt" or value == "":
-                    raise ValueError(f"OUTPUT_FILE '{value}' is not valid")
-                config[key] = lower_value
+                if "." in value:
+                    basename, format = lower_value.split(".", 1)
+                    if format != "txt" or value == "":
+                        raise ValueError(f"OUTPUT_FILE '{value}' is not valid")
+                    config[key] = lower_value
+                else:
+                    raise ValueError("Output file format is Invalid")
 
     except Exception as err:
         print(f"ERROR: {err}", file=sys.stderr)
@@ -103,26 +115,9 @@ def main() -> None:
     maze.start_generation(start_block)
     maze.generate_all()
 
-    # solve.start_solving(start_block, end_block)
+    solve.start_solving(start_block, end_block)
 
-    if entry_y == 0:
-        start_block.pop_wall("top")
-    elif entry_y == maze.height - 1:
-        start_block.pop_wall("bottom")
-    elif entry_x == 0:
-        start_block.pop_wall("left")
-    elif entry_x == maze.width - 1:
-        start_block.pop_wall("right")
-
-    if exit_y == 0:
-        end_block.pop_wall("top")
-    elif exit_y == maze.height - 1:
-        end_block.pop_wall("bottom")
-    elif exit_x == 0:
-        end_block.pop_wall("left")
-    elif exit_x == maze.width - 1:
-        end_block.pop_wall("right")
-
+    # Write to the output file
     try:
         hex_output = maze.hex_encoding()
         path = maze.path_direction()

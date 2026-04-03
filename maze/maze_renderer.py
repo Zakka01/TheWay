@@ -1,8 +1,8 @@
 import os
+import pygame
 import random
 from maze.maze_generator import MazeGenerator
 from maze.maze_solver import MazeSolver
-import pygame
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 
 
@@ -63,7 +63,6 @@ class MazeRenderer:
             pygame.image.load("assets/exit.png"),
             (self.block_size - 10, self.block_size - 10),
         )
-
         self.stone_bg = pygame.transform.scale(
             pygame.image.load("assets/stone_background.png"),
             (self.block_size, self.block_size),

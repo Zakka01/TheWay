@@ -42,7 +42,7 @@ class MazeGenerator:
         self.ft_pattern()
         self.maze_generation_dfs()
 
-        if not self.perfect:
+        if not self.perfect or self.perfect == 0:
             self.random_loops()
 
     def grid_builder(self) -> None:
@@ -178,32 +178,25 @@ class MazeGenerator:
 
         return True
 
-    def random_loops(self) -> None:
+    def random_loops(self, loops: int = 50) -> None:
         """Add Random loops to make the Maze Imperfect"""
 
+        candidates = []
         for y in range(self.height):
             for x in range(self.width):
 
-                current_block = self.grid[y][x]
-                if current_block.is_pattern:
+                current = self.grid[y][x]
+                if current.is_pattern:
                     continue
 
-                neighbors = []
                 if x + 1 < self.width and not self.grid[y][x + 1].is_pattern:
-                    neighbors.append((x + 1, y))
+                    candidates.append(((x, y), (x + 1, y)))
                 if y + 1 < self.height and not self.grid[y + 1][x].is_pattern:
-                    neighbors.append((x, y + 1))
-                if x - 1 >= 0 and not self.grid[y][x - 1].is_pattern:
-                    neighbors.append((x - 1, y))
-                if y - 1 >= 0 and not self.grid[y - 1][x].is_pattern:
-                    neighbors.append((x, y - 1))
+                    candidates.append(((x, y), (x, y + 1)))
 
-                if neighbors:
-                    nx, ny = random.choice(neighbors)
-                    neighbor_block = self.grid[ny][nx]
-
-                    # Remove walls between two blocks
-                    self.remove_wall_between(current_block, neighbor_block)
+        random.shuffle(candidates)
+        for (x1, y1), (x2, y2) in candidates[:loops]:
+            self.remove_wall_between(self.grid[y1][x1], self.grid[y2][x2])
 
     def hex_encoding(self) -> list:
         hex_lst = "0123456789ABCDEF"
@@ -212,6 +205,7 @@ class MazeGenerator:
             output = []
             for col in range(self.width):
                 value = 0
+
                 block = self.grid[row][col]
                 if block.has_wall("top"):
                     value += 1

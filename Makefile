@@ -1,2 +1,2 @@
-run:
+run :
 	python3 a_maze_ing.py config.txt

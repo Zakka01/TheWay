@@ -13,7 +13,6 @@ class MazeGenerator:
 
         self.height = config["HEIGHT"]
         self.width = config["WIDTH"]
-        self.perfect = config["PERFECT"]
 
         self.entry = config["ENTRY"]
         self.exit = config["EXIT"]
@@ -22,28 +21,6 @@ class MazeGenerator:
 
         self.grid = []
         self.solution = []
-
-        self.current_block = None
-        self.stack = []
-
-    def reset_maze(self, seed) -> None:
-        self.seed = seed
-        self.grid = []
-        self.stack = []
-
-        self.grid_builder()
-        x, y = self.entry
-        start_block = self.grid[y][x]
-
-        self.start_generation(start_block)
-        self.ft_pattern()
-
-    def generate_all(self) -> None:
-        self.ft_pattern()
-        self.maze_generation_dfs()
-
-        if not self.perfect or self.perfect == 0:
-            self.random_loops()
 
     def grid_builder(self) -> None:
         """
@@ -56,7 +33,7 @@ class MazeGenerator:
                 row.append(Block(x, y))
             self.grid.append(row)
 
-    def remove_wall_between(self, a: Block, b: Block) -> None:
+    def remove_wall_between(self, a: Block, b: Block):
 
         cx, cy = a.x, a.y
         nx, ny = b.x, b.y
@@ -143,13 +120,7 @@ class MazeGenerator:
 
         return valid_neighbors
 
-    def start_generation(self, start_block: Block) -> None:
-        random.seed(self.seed)
-
-        self.stack = [start_block]
-        start_block.checked = True
-
-    def maze_generation_dfs(self) -> bool:
+    def dfs_generation(self, current_block: Block) -> None:
         """
         Start at the Current Block, Check for Neighbors
         if any choose One Random, remove wall between current
@@ -158,45 +129,55 @@ class MazeGenerator:
         last item (the current block) and access the last one [-1]
         this is BackTracking :)
         """
-        if not self.stack:
-            return False
+        random.seed(self.seed)
 
-        current_block = self.stack[-1]
-        self.current_block = current_block
-        valid_neighbors = self.get_unvisited_neighbors(current_block)
+        stack = [current_block]
+        current_block.checked = True
 
-        if not valid_neighbors:
-            self.stack.pop()
-            return True
+        while stack:
+            current_block = stack[-1]
+            valid_neighbors = self.get_unvisited_neighbors(current_block)
 
-        next_block = random.choice(valid_neighbors)
+            if not valid_neighbors:
+                stack.pop()
+                continue
 
-        self.remove_wall_between(current_block, next_block)
+            next_block = random.choice(valid_neighbors)
 
-        next_block.checked = True
-        self.stack.append(next_block)
+            self.remove_wall_between(current_block, next_block)
 
-        return True
+            next_block.checked = True
+            stack.append(next_block)
 
-    def random_loops(self, loops: int = 50) -> None:
+    def hunt_kill_generation():
+        pass
+
+    def random_loops(self) -> None:
         """Add Random loops to make the Maze Imperfect"""
 
-        candidates = []
         for y in range(self.height):
             for x in range(self.width):
 
-                current = self.grid[y][x]
-                if current.is_pattern:
+                current_block = self.grid[y][x]
+                if current_block.is_pattern:
                     continue
 
+                neighbors = []
                 if x + 1 < self.width and not self.grid[y][x + 1].is_pattern:
-                    candidates.append(((x, y), (x + 1, y)))
+                    neighbors.append((x + 1, y))
                 if y + 1 < self.height and not self.grid[y + 1][x].is_pattern:
-                    candidates.append(((x, y), (x, y + 1)))
+                    neighbors.append((x, y + 1))
+                if x - 1 >= 0 and not self.grid[y][x - 1].is_pattern:
+                    neighbors.append((x - 1, y))
+                if y - 1 >= 0 and not self.grid[y - 1][x].is_pattern:
+                    neighbors.append((x, y - 1))
 
-        random.shuffle(candidates)
-        for (x1, y1), (x2, y2) in candidates[:loops]:
-            self.remove_wall_between(self.grid[y1][x1], self.grid[y2][x2])
+                if neighbors:
+                    nx, ny = random.choice(neighbors)
+                    neighbor_block = self.grid[ny][nx]
+
+                    # Remove walls betweeb two blocks
+                    self.remove_wall_between(current_block, neighbor_block)
 
     def hex_encoding(self) -> list:
         hex_lst = "0123456789ABCDEF"
@@ -205,7 +186,6 @@ class MazeGenerator:
             output = []
             for col in range(self.width):
                 value = 0
-
                 block = self.grid[row][col]
                 if block.has_wall("top"):
                     value += 1
@@ -240,3 +220,55 @@ class MazeGenerator:
                 path.append("N")
 
         return path
+
+    def visual(self) -> None:
+        # Background-color "pixels" (two spaces)
+        WHITE = "\033[48;5;250m  \033[0m"  # wall color (bright)
+        BLACK = "\033[48;5;0m  \033[0m"    # passage color
+        GREEN = "\033[48;5;46m  \033[0m"   # entry
+        RED = "\033[48;5;196m  \033[0m"  # exit
+        BORDEAUX = "\033[48;5;88m  \033[0m"    # pattern (optional)
+
+        if not self.grid:
+            print("(maze grid is empty)")
+            return
+
+        ex, ey = self.entry.x, self.entry.y
+        ox, oy = self.exit.x, self.exit.y
+
+        for y in range(self.height):
+            # Row 1: draw the "top" walls of each cell + corner walls
+            for x in range(self.width):
+                b = self.grid[y][x]
+                print(WHITE, end="")  # the left corner / pillar
+                print(WHITE if b.has_wall("top") else BLACK, end="")
+            print(WHITE)  # rightmost corner
+
+            # Row 2: draw the "left" walls and the cell interior
+            for x in range(self.width):
+                b = self.grid[y][x]
+                print(WHITE if b.has_wall("left") else BLACK, end="")
+
+                # cell interior (entry/exit/pattern/path)
+                if (x, y) == (ex, ey):
+                    print(GREEN, end="")
+                elif (x, y) == (ox, oy):
+                    print(RED, end="")
+                elif getattr(b, "is_pattern", False):
+                    print(BORDEAUX, end="")
+                else:
+                    print(BLACK, end="")
+
+            # rightmost boundary: use the right wall of last cell
+            last = self.grid[y][self.width - 1]
+            print(WHITE if last.has_wall("right") else BLACK)
+
+        # Bottom boundary: draw the "bottom" walls of the last row
+        for x in range(self.width):
+            b = self.grid[self.height - 1][x]
+            print(WHITE, end="")
+            print(WHITE if b.has_wall("bottom") else BLACK, end="")
+        print(WHITE)
+
+    def re_gen_maze() -> None:
+        ...

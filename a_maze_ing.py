@@ -1,7 +1,6 @@
 import sys
 from maze.maze_solver import MazeSolver
 from maze.maze_generator import MazeGenerator
-from maze.maze_renderer import MazeRenderer
 
 
 def parse_config() -> dict:
@@ -72,8 +71,13 @@ def parse_config() -> dict:
                     config[key] = value == "True"
                 else:
                     raise ValueError(
-                        "'PERFECT' value must be (True - False" " - 0 - 1)"
+                        "'PERFECT' value must be (True - False - 0 or 1)"
                     )
+            elif key == "ALGO":
+                value = value.lower()
+                if value not in ["dfs", "hak"]:
+                    raise ValueError(f"{key} must be dfs or hak")
+                config[key] = value
 
             elif key == "OUTPUT_FILE":
                 lower_value = value.lower()
@@ -92,38 +96,61 @@ def parse_config() -> dict:
     return config
 
 
-def main() -> None:
+def init_program() -> None:
+    print("\n=== A_Maze_ing ===")
+    print("1. Re-generate a new maze")
+    print("2. Show/Hide path from entry to exit")
+    print("3. Rotate maze colors")
+    print("4. Quit")
 
-    config = parse_config()
+
+def start_program(maze: MazeGenerator) -> None:
+    choice = int(input("Choice? (1-4): "))
+    if choice == 1:
+        pass
+    elif choice == 2:
+        pass
+    elif choice == 3:
+        pass
+    elif choice == 4:
+        exit()
+    else:
+        print(f"'{choice}' is not a valid choice!")
+        start_program(maze)
+
+
+def main() -> None:
+    config = parse_config()  # Get config file result
 
     maze = MazeGenerator(config)
     solve = MazeSolver(maze)
-
     maze.grid_builder()
 
-    # get the entry and exit
-    try:
-        entry_x, entry_y = maze.entry
-        exit_x, exit_y = maze.exit
+    # Get the Entry Coordinates from the config
+    entry = config["ENTRY"]
+    end = config["EXIT"]
+    x, y = entry
+    exit_x, exit_y = end
 
-        # Make sure they are inside the maze
-        if not (0 <= entry_x < maze.width and 0 <= entry_y < maze.height):
-            raise ValueError(f"Entry coordinates {maze.entry} out of bounds")
-        if not (0 <= exit_x < maze.width and 0 <= exit_y < maze.height):
-            raise ValueError(f"Exit coordinates {maze.exit} out of bounds")
+    start_block = maze.grid[y][x]
+    end_block = maze.grid[exit_y][exit_x]
 
-        start_block = maze.grid[entry_y][entry_x]
-        end_block = maze.grid[exit_y][exit_x]
-    except ValueError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        exit(1)
+    maze.entry = start_block
+    maze.exit = end_block
 
-    # init the containers to start generate and solve maze
-    maze.start_generation(start_block)
-    maze.generate_all()
-    solve.start_solving(start_block, end_block)
+    maze.ft_pattern()
+    if config["ALGO"] == "dfs":
+        maze.dfs_generation(start_block)
+    elif config["ALGO"] == "hak":
+        maze.hunt_kill_generation()
+    if not config["PERFECT"]:
+        maze.random_loops()
 
-    # Write to the output file
+    solve.solve_maze(start_block, end_block)
+
+    # maze visualization
+    maze.visual()
+
     try:
         hex_output = maze.hex_encoding()
         path = maze.path_direction()
@@ -134,7 +161,7 @@ def main() -> None:
                 f.write("".join(row) + "\n")
 
             f.write("\n")
-            f.write(f"{entry_x},{entry_y}")
+            f.write(f"{x},{y}")
             f.write("\n")
             f.write(f"{exit_x},{exit_y}")
 
@@ -142,10 +169,10 @@ def main() -> None:
             for p in path:
                 f.write(p)
     except Exception as err:
-        print(f"ERROR: {err}", file=sys.stderr)
+        print(f"ERROR: {err}")
 
-    render = MazeRenderer(maze, solve)
-    render.rendering()
+    init_program()
+    start_program(maze)
 
 
 if __name__ == "__main__":

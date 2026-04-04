@@ -1,5 +1,4 @@
 class Block:
-
     def __init__(self, x: int, y: int):
         """
         Initialize the attributes :
@@ -14,8 +13,6 @@ class Block:
         self.checked = False
         self.is_pattern = False
         self.is_path = False
-
-        self.visited_by_bfs = False
 
     def has_wall(self, direction: str) -> bool:
         """

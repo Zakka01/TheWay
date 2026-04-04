@@ -1,10 +1,10 @@
+from maze.block import Block
 from collections import deque
 
 
 class MazeSolver:
 
     def __init__(self, maze):
-        self.maze = maze
         self.height = maze.height
         self.width = maze.width
 
@@ -14,117 +14,67 @@ class MazeSolver:
         self.grid = maze.grid
         self.solution = maze.solution
 
-        self.queue = deque()
-        self.visited = set()
-        self.family_map = {}
-        self.exit_block = None
-        self.solving = True
-
-        self.show_visited = True
-
-    def reset_solve(self) -> None:
-        self.queue = deque()
-        self.visited = set()
-        self.family_map = {}
-        self.exit_block = None
-        self.solving = True
-
-        # Refresh references in case the maze object reset its grid/solution.
-        self.entry = self.maze.entry
-        self.exit = self.maze.exit
-        self.grid = self.maze.grid
-        self.solution = self.maze.solution
-
-        # Always start from a clean path after regeneration.
-        self.solution.clear()
-
-        self.grid = self.maze.grid
-        x, y = self.entry
-        ex, ey = self.exit
-
-        start_block = self.grid[y][x]
-        exit_block = self.grid[ey][ex]
-
-        self.start_solving(start_block, exit_block)
-
-    def is_connected(self, current, neighbor) -> bool:
-        cx, cy = current.x, current.y
-        nx, ny = neighbor.x, neighbor.y
-
-        if cx < nx:
-            return not current.has_wall("right") and not neighbor.has_wall(
-                "left"
-            )
-
-        if cx > nx:
-            return not current.has_wall("left") and not neighbor.has_wall(
-                "right"
-            )
-
-        if cy > ny:
-            return not current.has_wall("top") and not neighbor.has_wall(
-                "bottom"
-            )
-
-        if cy < ny:
-            return not current.has_wall("bottom") and not neighbor.has_wall(
-                "top"
-            )
-
-        return False
-
-    def build_solution(self, familly_map, exit_block) -> None:
-
-        key = self.grid[exit_block.y][exit_block.x]
-
-        while key is not None:
-            self.solution.append(key)
-            key = familly_map.get(key)
-
-        self.solution.reverse()
-
-    def start_solving(self, start_block, exit_block) -> None:
-
-        self.queue = deque([start_block])
-        self.visited = {start_block}
-        self.family_map = {start_block: None}
-
-        self.exit_block = exit_block
-
-    def solve_maze(self) -> bool:
+    def solve_maze(self, current_block: Block, exit_block: Block) -> None:
         """Solve the Maze using Breadth-First Search Algorithm"""
 
-        if not self.queue:
-            self.solving = False
-            return False
+        blocks = deque([current_block])
+        visited = set()
+        familly_map = {current_block: None}
+        visited.add(current_block)
 
-        current_block = self.queue.popleft()
-        current_block.visited_by_bfs = True
+        while blocks:
+            current_block = blocks.popleft()
 
-        # stop if we reach the exit and save its block
-        if current_block == self.exit_block:
-            self.build_solution(self.family_map, self.exit_block)
-            self.solving = False
+            # stop if we reach the exit and save its block
+            if (current_block.x, current_block.y) == (exit_block.x, exit_block.y):
+                break
 
-            for row in self.grid:
-                for block in row:
-                    block.visited_by_bfs = False
+            cx, cy = current_block.x, current_block.y
+            neighbors = [(cx, cy - 1), (cx, cy + 1), (cx - 1, cy), (cx + 1, cy)]
 
-            return False
+            for nx, ny in neighbors:
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    neighbor_block = self.grid[ny][nx]
 
-        cx, cy = current_block.x, current_block.y
-        neighbors = [(cx, cy - 1), (cx, cy + 1), (cx - 1, cy), (cx + 1, cy)]
+                    if neighbor_block not in visited:
+                        # check connected walls
+                        if cx < nx:
+                            if not current_block.has_wall(
+                                "right"
+                            ) and not neighbor_block.has_wall("left"):
+                                blocks.append(neighbor_block)
 
-        for nx, ny in neighbors:
-            if 0 <= nx < self.width and 0 <= ny < self.height:
-                neighbor_block = self.grid[ny][nx]
+                        elif cx > nx:
+                            if not current_block.has_wall(
+                                "left"
+                            ) and not neighbor_block.has_wall("right"):
+                                blocks.append(neighbor_block)
 
-                if neighbor_block in self.visited:
-                    continue
+                        elif cy > ny:
+                            if not current_block.has_wall(
+                                "top"
+                            ) and not neighbor_block.has_wall("bottom"):
+                                blocks.append(neighbor_block)
 
-                # check connected walls
-                if self.is_connected(current_block, neighbor_block):
-                    self.queue.append(neighbor_block)
-                    self.visited.add(neighbor_block)
-                    self.family_map[neighbor_block] = current_block
-        return True
+                        elif cy < ny:
+                            if not current_block.has_wall(
+                                "bottom"
+                            ) and not neighbor_block.has_wall("top"):
+                                blocks.append(neighbor_block)
+                        else:
+                            continue
+
+                        if neighbor_block in blocks:
+                            visited.add(neighbor_block)
+                            familly_map[neighbor_block] = current_block
+
+        # trace back the path
+        key_block = self.grid[exit_block.y][exit_block.x]
+
+        while key_block is not None:
+            self.solution.append(key_block)
+            key_block = familly_map.get(key_block)
+
+        self.solution.reverse()
+        for block in self.solution:
+            block.is_path = True
